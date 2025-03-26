@@ -1,6 +1,6 @@
 import heapq
 from collections import deque
-# from funcoes import linhas_estacoes
+from funcoes import linhas_estacoes
 import json
 
 # Velocidade do trem (30 km/h) e baldeação (4 minutos = 0,0666 horas)
@@ -15,7 +15,9 @@ def carregar_dados_json(arquivo="metro.json"):
 
 dados_metro = carregar_dados_json()
 
+# linhas_metro: Contém as linhas e suas respectivas estações.
 linhas_metro = dados_metro["linhas_metro"]
+# distancias_reais: Um dicionário para armazenar as distâncias entre estações.
 distancias_reais = {}
 
 for chave, valor in dados_metro["distancias_reais"].items():
@@ -76,7 +78,7 @@ def busca_heuristica(origem, linha_origem, destino):
 
         for (e1, e2), dist in distancias_reais.items():
             if e1 == atual:
-                for prox_linha in linhas_estacao(e2):
+                for prox_linha in linhas_estacao(e2, linhas_metro):
                     troca = TROCA_LINHA if prox_linha != linha_atual else 0
                     tempo_total = tempo_acumulado + tempo_viagem(dist) + troca
                     heapq.heappush(fila, (tempo_total, e2, prox_linha, caminho))
