@@ -1,7 +1,8 @@
 import heapq
 from collections import deque
-from funcoes import linhas_estacoes
 import json
+import networkx as nx
+import matplotlib.pyplot as plt
 
 # Velocidade do trem (30 km/h) e baldeação (4 minutos = 0,0666 horas)
 TREM_VELOCIDADE = 30
@@ -10,8 +11,7 @@ TROCA_LINHA = 4 / 60
 # Importando dados do JSON
 def carregar_dados_json(arquivo="metro.json"):
     with open(arquivo, "r", encoding="utf-8") as f:
-        return json.load(f);
-
+        return json.load(f)
 
 dados_metro = carregar_dados_json()
 
@@ -36,7 +36,6 @@ def linhas_estacao(estacao):
 # Função que converte distância em tempo
 def tempo_viagem(dist_km):
     return dist_km / TREM_VELOCIDADE
-
 
 # Busca cega (largura), sem considerar tempo
 def busca_cega(origem, destino):
@@ -78,12 +77,35 @@ def busca_heuristica(origem, linha_origem, destino):
 
         for (e1, e2), dist in distancias_reais.items():
             if e1 == atual:
-                for prox_linha in linhas_estacao(e2, linhas_metro):
+                for prox_linha in linhas_estacao(e2):
                     troca = TROCA_LINHA if prox_linha != linha_atual else 0
                     tempo_total = tempo_acumulado + tempo_viagem(dist) + troca
                     heapq.heappush(fila, (tempo_total, e2, prox_linha, caminho))
 
     return None, float('inf')
+
+# Função para desenhar o grafo do metrô
+def desenhar_grafo(caminho):
+    G = nx.Graph()
+
+    # Adiciona as conexões do metrô no grafo
+    for (e1, e2), dist in distancias_reais.items():
+        G.add_edge(e1, e2, weight=dist)
+
+    # Define a posição dos nós de forma automática
+    pos = nx.spring_layout(G, seed=42)
+
+    # Desenha o grafo completo
+    plt.figure(figsize=(10, 6))
+    nx.draw(G, pos, with_labels=True, node_size=700, node_color="lightgray", edge_color="gray")
+
+    # Destaca o caminho encontrado em vermelho
+    if caminho:
+        edges_destacados = [(caminho[i], caminho[i + 1]) for i in range(len(caminho) - 1)]
+        nx.draw_networkx_edges(G, pos, edgelist=edges_destacados, edge_color="red", width=2)
+
+    plt.title("Mapa do Metrô com Rota Encontrada")
+    plt.show()
 
 # Interface principal
 if __name__ == "__main__":
@@ -101,12 +123,15 @@ if __name__ == "__main__":
     print("\nRESULTADO DA BUSCA HEURÍSTICA:")
     caminho_heuristico, tempo_heuristico = busca_heuristica(origem, linha_origem, destino)
     if caminho_heuristico:
-    #    print("Melhor caminho com tempos e trocas:")
         for i in range(len(caminho_heuristico) - 1):
             atual_est, atual_linha = caminho_heuristico[i]
             prox_est, prox_linha = caminho_heuristico[i + 1]
             troca = " (TROCA DE LINHA)" if atual_linha != prox_linha else ""
             print(f"{atual_est} ({atual_linha}) -> {prox_est} ({prox_linha}){troca}")
+
         print(f"Tempo estimado: {tempo_heuristico * 60:.2f} minutos")
+
+        # Desenha o grafo com o caminho encontrado
+        desenhar_grafo([est for est, _ in caminho_heuristico])
     else:
         print("Caminho não encontrado.")
