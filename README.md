@@ -27,6 +27,10 @@ pip install -r requirements.txt
 
 ![Gráfico do Caminho](imagens/image.png)
 
+<a href="https://docs.google.com/document/d/1syjp8reGaCz-Yqbzi0kGp9_aytAD0mVjdFsH7n0LTSk/edit?usp=sharing" target="_blank">Documento DOCS</a>
+
+
+
 
 ## 🛠 Tecnologias Utilizadas
 
